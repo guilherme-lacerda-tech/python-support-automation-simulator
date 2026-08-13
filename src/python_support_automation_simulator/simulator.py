@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import json
-import sqlite3
 from pathlib import Path
+
+from sqlalchemy import delete, func, select
+
+from .database import Base, create_engine_for_url
+from .models import Action, History, QueueItem, Rule, Ticket
 
 
 def classify_ticket(ticket: dict, rules: list[dict]) -> dict:
@@ -16,14 +20,57 @@ def run(tickets_path: Path, rules_path: Path, db_path: Path) -> dict:
     tickets = json.loads(tickets_path.read_text(encoding="utf-8"))
     rules = json.loads(rules_path.read_text(encoding="utf-8"))
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(db_path) as conn:
-        conn.execute("create table if not exists tickets(ticket_id text, category text, priority text, status text)")
-        conn.execute("create table if not exists queue(ticket_id text, rule_id text, queue text, state text)")
-        conn.execute("delete from tickets")
-        conn.execute("delete from queue")
+    engine = create_engine_for_url(f"sqlite+pysqlite:///{db_path}")
+    Base.metadata.create_all(bind=engine)
+    from sqlalchemy.orm import sessionmaker
+
+    SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+    with SessionLocal() as session:
+        session.execute(delete(History))
+        session.execute(delete(QueueItem))
+        session.execute(delete(Action))
+        session.execute(delete(Rule))
+        session.execute(delete(Ticket))
+        session.add_all(Rule(**rule) for rule in rules)
+        session.add_all(
+            [
+                Action(name="assign_queue", description="Place the ticket into a synthetic work queue."),
+                Action(name="manual_review", description="Route unmatched tickets to synthetic manual triage."),
+            ]
+        )
+        session.flush()
+
         for ticket in tickets:
-            conn.execute("insert into tickets values (?, ?, ?, ?)", (ticket["ticket_id"], ticket["category"], ticket["priority"], ticket["status"]))
+            ticket_model = Ticket(
+                ticket_id=ticket["ticket_id"],
+                category=ticket["category"],
+                priority=ticket["priority"],
+                status=ticket["status"],
+                message=ticket["message"],
+            )
+            session.add(ticket_model)
+            session.flush()
             decision = classify_ticket(ticket, rules)
-            conn.execute("insert into queue values (?, ?, ?, ?)", (decision["ticket_id"], decision["rule_id"], decision["queue"], decision["state"]))
-        rows = conn.execute("select queue, count(*) from queue group by queue order by queue").fetchall()
-    return {"tickets": len(tickets), "queues": dict(rows)}
+            session.add(
+                QueueItem(
+                    ticket_ref=ticket_model.id,
+                    rule_id=decision["rule_id"],
+                    queue=decision["queue"],
+                    state=decision["state"],
+                )
+            )
+            action_name = "assign_queue" if decision["rule_id"] != "manual_review" else "manual_review"
+            session.add(
+                History(
+                    ticket_ref=ticket_model.id,
+                    action=action_name,
+                    from_state=ticket["status"],
+                    to_state=decision["state"],
+                    note=f"Matched rule {decision['rule_id']} and routed to {decision['queue']}.",
+                )
+            )
+        session.commit()
+
+        rows = session.execute(select(QueueItem.queue, func.count()).group_by(QueueItem.queue).order_by(QueueItem.queue)).all()
+        history_entries = session.scalar(select(func.count(History.id))) or 0
+    return {"tickets": len(tickets), "queues": dict(rows), "history_entries": history_entries}

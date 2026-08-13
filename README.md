@@ -1,77 +1,64 @@
-    # Python Support Automation Simulator
+# Python Support Automation Simulator
 
-    Independent public portfolio project for **Python**, **automation**,
-    **systems integration** and **solutions engineering**.
+Independent public portfolio project for **Python**, **automation workflows**, **SQLAlchemy** and **SQLite**.
 
-    This repository was created from scratch with a fictional domain and
-    synthetic data. It does not contain corporate code, real data, private
-    endpoints, credentials, logs or proprietary rules.
+This repository was created from scratch with fictional tickets and synthetic rules. It does not contain corporate code, real data, private endpoints, credentials, logs or proprietary rules.
 
-    ## Problem
+## Problem
 
-    Support teams need repeatable triage, queues, history and reports without exposing real tickets.
+Support workflows need repeatable triage, queue assignment, state transitions and auditability without exposing real tickets.
 
-    ## Objective
+## What It Demonstrates
 
-    Simulate a support automation workflow with fictional tickets and configurable generic rules.
+- Fictional `Ticket`, `Rule`, `QueueItem`, `Action` and `History` entities.
+- Rule-based queue routing.
+- State-transition audit trail.
+- SQLite persistence through SQLAlchemy.
+- Focused tests for routing and persistence behavior.
 
-    ## Current Features
+## Architecture
 
-    - Fictional ticket dataset.
-- Generic configurable rules.
-- SQLite queue storage.
-- Queue summary report.
+```mermaid
+flowchart LR
+    A["Tickets + rules"] --> B["Rule engine"]
+    B --> C["Queue item"]
+    B --> D["History"]
+    C --> E["SQLite"]
+    D --> E
+```
 
-    ## Architecture
+See [docs/architecture.md](docs/architecture.md) for details.
 
-    ```mermaid
-    flowchart LR
-        A["Synthetic input"] --> B["Python processing"]
-        B --> C["Rules / validation"]
-        C --> D["Generated local output"]
-        D --> E["Future API / dashboard"]
-    ```
+## Stack
 
-    See [docs/architecture.md](docs/architecture.md) for details.
+`Python` `SQLAlchemy` `SQLite` `JSON` `PyTest`
 
-    ## Stack
+## Run Locally
 
-    Current:
+```powershell
+python -m pip install -e .
+python examples/run_demo.py
+```
 
-    `Python` `SQLite` `JSON` `Synthetic tickets`
+## Run Tests
 
-    Planned evolution:
+```powershell
+python -m pip install -e ".[dev]"
+pytest
+```
 
-    - PyTest
-- FastAPI
-- PostgreSQL
-- Docker
-- GitHub Actions
+## Technical Decisions
 
-    ## Run Locally
+- SQLite is used because the simulator is intentionally local and lightweight.
+- SQLAlchemy is used to show relational modeling and keep the workflow testable.
+- PostgreSQL is not used in this repo because it would not add enough value for the current scope.
 
-    ```powershell
-    python examples/run_demo.py
-    ```
+## Roadmap
 
-    The demo uses only files under `data/sample/` and writes generated output
-    to ignored local folders.
+- Add more transition rules after the PyTest study phase.
+- Add report export by queue and action type.
+- Keep the domain fictional and generic.
 
-    ## Repository Workflow
+## Security and Independence
 
-    This project is intended to evolve through:
-
-    - Issues for planned work.
-    - Milestones for learning phases.
-    - Small branches and pull requests.
-    - Releases when a useful increment is ready.
-
-    Draft issues are documented in [docs/github-issues.md](docs/github-issues.md).
-
-    ## Roadmap
-
-    See [ROADMAP.md](ROADMAP.md).
-
-    ## Security and Independence
-
-    See [SECURITY.md](SECURITY.md) and [DISCLAIMER.md](DISCLAIMER.md).
+See [SECURITY.md](SECURITY.md) and [DISCLAIMER.md](DISCLAIMER.md).

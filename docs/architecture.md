@@ -1,30 +1,21 @@
-    # Architecture
+# Architecture
 
-    ## Design Goal
+## Design Goal
 
-    Simulate a support automation workflow with fictional tickets and configurable generic rules.
+Simulate a support automation workflow with fictional tickets, generic rules, queues and an audit trail.
 
-    ## Current Boundaries
+## Flow
 
-    - Standard library first.
-    - Synthetic input only.
-    - Generated output ignored by Git.
-    - No real systems, endpoints or credentials.
+```mermaid
+flowchart LR
+    Tickets["Synthetic tickets"] --> Engine["Rule engine"]
+    Rules["Generic rules"] --> Engine
+    Engine --> Queue["Queue item"]
+    Engine --> History["Audit history"]
+    Queue --> SQLite["SQLite via SQLAlchemy"]
+    History --> SQLite
+```
 
-    ## Decisions
+## Persistence Choice
 
-    - Keep rules data-driven.
-- Persist only synthetic tickets.
-- Separate classification from storage.
-
-    ## Future Layers
-
-    ```mermaid
-    flowchart TB
-        A["Mock inputs"] --> B["Collector / Loader"]
-        B --> C["Domain validation"]
-        C --> D["Rules / Processing"]
-        D --> E["Persistence"]
-        E --> F["API / Reporting"]
-        F --> G["Automation workflows"]
-    ```
+SQLite is intentionally kept for this project because the workflow is local, small and interview-friendly. PostgreSQL would add operational weight without changing the main learning signal.
