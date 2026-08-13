@@ -1,0 +1,20 @@
+[
+  {
+    "rule_id": "urgent_device_issue",
+    "category": "device",
+    "priority": "high",
+    "queue": "operations"
+  },
+  {
+    "rule_id": "data_quality_review",
+    "category": "data",
+    "priority": "normal",
+    "queue": "data"
+  },
+  {
+    "rule_id": "access_request",
+    "category": "access",
+    "priority": "normal",
+    "queue": "support"
+  }
+]
