@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.0 - Portfolio professionalization
+
+- Added GitHub Actions CI with Ruff, PyTest and coverage.
+- Added an unmatched-ticket workflow test to document manual review behavior.
+- Polished README badges, examples and simulator evaluation notes.
+
 ## v0.2.0 - SQLAlchemy queue and audit trail
 
 - Added SQLAlchemy models for tickets, rules, queue items, actions and history.
