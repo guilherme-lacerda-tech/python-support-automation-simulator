@@ -1,64 +1,87 @@
 # Python Support Automation Simulator
 
-Independent public portfolio project for **Python**, **automation workflows**, **SQLAlchemy** and **SQLite**.
+[![CI](https://github.com/guilherme-lacerda-tech/python-support-automation-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/guilherme-lacerda-tech/python-support-automation-simulator/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+[![Release](https://img.shields.io/github/v/release/guilherme-lacerda-tech/python-support-automation-simulator)](https://github.com/guilherme-lacerda-tech/python-support-automation-simulator/releases)
+[![License](https://img.shields.io/github/license/guilherme-lacerda-tech/python-support-automation-simulator)](LICENSE)
 
-This repository was created from scratch with fictional tickets and synthetic rules. It does not contain corporate code, real data, private endpoints, credentials, logs or proprietary rules.
+Local support workflow simulator with synthetic tickets, rule-based queue assignment and an SQLAlchemy audit trail.
 
-## Problem
+## Why / Problem
 
-Support workflows need repeatable triage, queue assignment, state transitions and auditability without exposing real tickets.
+Support automation should be explainable: which rule matched, where the ticket went and what state changed. This project demonstrates that workflow without using real tickets or company-specific rules.
 
-## What It Demonstrates
+## Features
 
-- Fictional `Ticket`, `Rule`, `QueueItem`, `Action` and `History` entities.
+- `Ticket`, `Rule`, `QueueItem`, `Action` and `History` entities.
 - Rule-based queue routing.
-- State-transition audit trail.
+- Manual-review fallback.
+- State-transition audit history.
 - SQLite persistence through SQLAlchemy.
-- Focused tests for routing and persistence behavior.
+- CI with Ruff, PyTest and coverage.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A["Tickets + rules"] --> B["Rule engine"]
-    B --> C["Queue item"]
-    B --> D["History"]
-    C --> E["SQLite"]
-    D --> E
+    Ticket["Synthetic ticket"] --> Rules["Rules"]
+    Rules --> Queue["Queue"]
+    Queue --> Action["Action"]
+    Action --> History["History"]
+    History --> SQLite["SQLite"]
 ```
 
-See [docs/architecture.md](docs/architecture.md) for details.
+## Tech Stack
 
-## Stack
+Current: `Python` `SQLAlchemy` `SQLite` `JSON` `PyTest` `Ruff`
 
-`Python` `SQLAlchemy` `SQLite` `JSON` `PyTest`
+Planned: queue reports, more transition examples and broader tests after the PyTest study phase.
 
-## Run Locally
-
-```powershell
-python -m pip install -e .
-python examples/run_demo.py
-```
-
-## Run Tests
+## Quick Start
 
 ```powershell
 python -m pip install -e ".[dev]"
-pytest
+python examples/run_demo.py
 ```
 
-## Technical Decisions
+## Tests
 
-- SQLite is used because the simulator is intentionally local and lightweight.
-- SQLAlchemy is used to show relational modeling and keep the workflow testable.
-- PostgreSQL is not used in this repo because it would not add enough value for the current scope.
+```powershell
+python -m pytest --cov --cov-report=term-missing
+python -m ruff check .
+```
+
+## Example Output
+
+```json
+{
+  "tickets": 3,
+  "queues": {
+    "data": 1,
+    "operations": 1,
+    "support": 1
+  },
+  "history_entries": 3
+}
+```
+
+## Project Structure
+
+- `src/python_support_automation_simulator/simulator.py`: workflow execution.
+- `src/python_support_automation_simulator/models.py`: SQLAlchemy entities.
+- `data/sample`: synthetic tickets and rules.
+- `tests`: rule, queue and audit-trail tests.
+
+## Engineering Decisions
+
+- SQLite is intentional because this simulator is local and lightweight.
+- SQLAlchemy is used to demonstrate relational modeling without adding unnecessary infrastructure.
+- PostgreSQL is not used here because it would not add enough value for the current scope.
 
 ## Roadmap
 
-- Add more transition rules after the PyTest study phase.
-- Add report export by queue and action type.
-- Keep the domain fictional and generic.
+See [ROADMAP.md](ROADMAP.md).
 
-## Security and Independence
+## Security
 
-See [SECURITY.md](SECURITY.md) and [DISCLAIMER.md](DISCLAIMER.md).
+All tickets and rules are fictional. No real support workflows, client data or employer processes are included.
