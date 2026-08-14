@@ -8,6 +8,9 @@ updates:
       time: "10:40"
     open-pull-requests-limit: 5
     ignore:
+      - dependency-name: "pytest"
+        versions:
+          - ">=9"
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
